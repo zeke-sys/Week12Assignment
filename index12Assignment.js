@@ -53,7 +53,7 @@ class FestivalService {
     }
 }
 
-//establishing the rerendering of the DOM
+//establishing rerendering of the DOM
 class DOMManager {
     static festivals;
 
