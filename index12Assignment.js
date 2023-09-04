@@ -20,9 +20,7 @@ class Artist { //creating Artist class
 
 //creating http requests send service through MockApi
 class FestivalService {
-    static url ='https://apimocha.com/myfinalproject/example'; //using static methods to call on the class itself directly as it belongs to the class rather than an instance of said class
-    
-    //static url ='https://64f3f3a8932537f4051a0ad0.mockapi.io/Festivals_API/Festivals';
+    static url ='https://64f3f3a8932537f4051a0ad0.mockapi.io/Festivals_API/Festivals'; //using static methods to call on the class itself directly as it belongs to the class rather than an instance of said class
 
     static getAllFestivals() {
         return $.get(this.url); //establishing GET aka Read in CRUD
