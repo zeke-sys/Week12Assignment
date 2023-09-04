@@ -62,7 +62,7 @@ class DOMManager {
         FestivalService.getAllFestivals().then(festivals => this.render(festivals));
     }
 
-    //creating new artist with updated data received from requests
+    //creating new artist with updated data received from theS requests
     static createFestival(name) {
         FestivalService.createFestival(new Festival(name))
         .then(() => {
