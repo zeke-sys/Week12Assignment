@@ -1,156 +1,148 @@
 //Zeke 2023
 
-/* Michael Jackson's Discography:
-- Got to Be There (1972), 10 songs
-- Ben (1972), 10 songs
-- Music & Me (1973), 10 songs
-- Forever, Michael (1975), 10 songs
-- Off the Wall (1979), 10 songs
-- Thriller (1982), 9 songs
-- Bad (1987), 10 songs (bonus song on CD realease aka 11 songs)
-- Dangerous (1991), 14 songs
-- HIStory: Past, Present and Future, Book 1 (1995), 30 songs (15 on each Disc)
-- Invincible (2001), 16 songs
-*/
-
-
-class Artist { //creating Artist class
-    constructor(artistName) {
-        this.artistName = artistName;
-        this.albums = [];
+class Festival { //creating Festival class
+    constructor(name) {
+        this.name = name;
+        this.artists = [];
     }
 
-    addAlbum(albumName) {
-        this.albums.push(new Album(albumName));
+    addArtist(name, duration) {
+        this.artists.push(new Artist(name, duration));
     }
 }
 
-class Album { //creating Album class
-    constructor(albumName) {
-        this.albumName = albumName;
+class Artist { //creating Artist class
+    constructor(name, duration) {
+        this.name = name;
+        this.duration = duration;
     }
 }
 
 //creating http requests send service through MockApi
-class ArtistService {
-    static url ='https://64f3f3a8932537f4051a0ad0.mockapi.io/Music_Catalog_API/Artists'; //using static methods to call on the class itself directly as it belongs to the class rather than an instance of said class
+class FestivalService {
+    static url ='https://apimocha.com/myfinalproject/example'; //using static methods to call on the class itself directly as it belongs to the class rather than an instance of said class
+    
+    //static url ='https://64f3f3a8932537f4051a0ad0.mockapi.io/Festivals_API/Festivals';
 
-    static getAllArtists() {
+    static getAllFestivals() {
         return $.get(this.url); //establishing GET aka Read in CRUD
     }
 
-    static getArtist(id) {
+    static getFestival(id) {
         return $.get(this.url + `/${id}`);
     }
 
-    static createArtist(artist) {
-        return $.post(this.url, artist); //establishing POST aka Create in CRUD
+    static createFestival(festival) {
+        return $.post(this.url, festival); //establishing POST aka Create in CRUD
     }
 
     //now ensuring that an id is assigned automatically by the API
-    static updateArtist(artist) {
+    static updateFestival(festival) {
         return $.ajax({
-            url: this.url  + `/${artist._id}`,
+            url: this.url  + `/${festival._id}`,
             dataType: 'json',
-            data: JSON.stringify(artist),
+            data: JSON.stringify(festival),
             contentType: 'application/json',
-            type: 'PUT' ////establishing PUT aka Update in CRUD
+            type: 'PUT' //establishing PUT aka Update in CRUD
         });
     }
 
-    static deleteArtist(id) {
+    static deleteFestival(id) {
         return $.ajax({
             url: this.url + `/${id}`,
-            type: 'DELETE' ////establishing DELETE aka Delete :) in CRUD
+            type: 'DELETE' //establishing DELETE aka Delete :) in CRUD
         });
     }
 }
 
 //establishing the rerendering of the DOM
 class DOMManager {
-    static artists;
+    static festivals;
 
     //with every return as seen above, using the .then() method to get the data and rerender the DOM
-    static getAllArtists() {
-        ArtistService.getAllArtists().then(artists => this.render(artists));
+    static getAllFestivals() {
+        FestivalService.getAllFestivals().then(festivals => this.render(festivals));
     }
 
     //creating new artist with updated data received from requests
-    static createArtist(artistName) {
-        ArtistService.createArtist(new Artist(artistName))
+    static createFestival(name) {
+        FestivalService.createFestival(new Festival(name))
         .then(() => {
-            return ArtistService.getAllArtists();
+            return FestivalService.getAllFestivals();
         })
-        .then((artists) => this.render(artists));
+        .then((festivals) => this.render(festivals));
     }
 
-    static deleteArtist(id) {
-        ArtistService.deleteArtist(id)
+    static deleteFestival(id) {
+        FestivalService.deleteFestival(id)
             .then(() => {
-                return ArtistService.getAllArtists();
+                return FestivalService.getAllFestivals();
             })
-            .then((artists) => this.render(artists));
+            .then((festivals) => this.render(festivals));
     }
 
-    static addAlbum(id) {
-        for (let artist of this.artists) {
-            if (artist._id == id) {
-                artist.albums.push(new Album($(`#${artist._id}-album-name`).val()));
-                ArtistService.updateArtist(artist)
+    static addArtist(id) {
+        for (let festival of this.festivals) {
+            if (festival._id == id) {
+                festival.artists.push(new Artist($(`#${festival._id}-artist-name`).val(), $(`#${festival._id}-artist-duration`).val()));
+                FestivalService.updateFestival(festival)
                 .then(() => {
-                    return ArtistService.getAllArtists();
+                    return FestivalService.getAllFestivals();
                 })
-                .then((artists) => this.render(artists));
+                .then((festivals) => this.render(festivals));
             }
         }
     }
 
-    static deleteAlbum(artistId, albumId) {
-        for (let artist of this.artists) {
-            if (artist._id == artistId) {
-                for (let album of artist.albums) {
-                    if (album._id == albumId) {
-                        artist.albums.splice(artist.albums.indexOf(album), 1);
-                        ArtistService.updateArtist(artist)
+    static deleteArtist(festivalId, artistId) {
+        for (let festival of this.festivals) {
+            if (festival._id == festivalId) {
+                for (let artist of festival.artists) {
+                    if (artist._id == artistId) {
+                        festival.artists.splice(festival.artists.indexOf(artist), 1);
+                        FestivalService.updateFestival(festival)
                             .then(() => {
-                                return ArtistService.getAllArtists();
+                                return FestivalService.getAllFestivals();
                             })
-                            .then((artists) => this.render(artists));
+                            .then((festivals) => this.render(festivals));
                     }
                 }
             }
         }
     }
 
-    static render(artists) {
-        this.artists = artists;
+    static render(festivals) {
+        this.festivals = festivals;
         $('#app').empty();
-        for (let artist of artists) {
+        for (let festival of festivals) {
             $('#app').prepend(
-               `<div id="${artist._id}" class="card">
+               `<div id="${festival._id}" class="card">
                     <div class="card-header">
-                        <h2>${artist.artistName}</h2>
-                        <button class="btn btn-danger" onclick="DOMManager.deleteArtist('${artist._id}')">Delete</button>
+                        <h2>${festival.name}</h2>
+                        <button class="btn btn-danger" onclick="DOMManager.deleteFestival('${festival._id}')">Delete</button>
                     </div>
                     <div class="card-body">
                         <div class="card">
                             <div class="row">
                                 <div class="col-sm">
-                                    <input type="text" id="${artist._id}-album-name" class="form-control" placeholder="Album Name">
+                                    <input type="text" id="${festival._id}-artist-name" class="form-control" placeholder="Artist Name">
+                                </div>
+                                <div class="col-sm">
+                                    <input type="text" id="${festival._id}-artist-duration" class="form-control" placeholder="Performance Duration">
                                 </div>
                             </div>
-                            <button id="${artist._id}-new-album" onclick="DOMManager.addAlbum('${artist._id}')" class="btn btn-primary form-control">Add</button>
+                            <button id="${festival._id}-new-artist" onclick="DOMManager.addArtist('${festival._id}')" class="btn btn-primary form-control">Add</button>
                         </div>
                     </div>
                 </div><br>` 
             );
-            for (let album of artist.albums) {
-                console.log(artist);
-                $(`#${artist._id}`).find('.card-body').append(
+            for (let artist of festival.artists) {
+                $(`#${festival._id}`).find('.card-body').append(
                     `<p>
-                        <span id="name-${album._id}"><strong>Album Name: </strong> ${album.albumName}</span>
-                        <button class="btn btn-danger" onclick="DOMManager.deleteAlbum('${artist._id}', '${album._id}')">Delete Album</button>
-                    >/p>`
+                        <span id="name-${artist._id}"><strong>Name: </strong> ${artist.name}</span>
+                        <span id="duration-${artist._id}"><strong>Duration: </strong> ${artist.duration}</span>
+                        <button class="btn btn-danger" onclick="DOMManager.deleteArtist('${festival._id}', '${artist._id}')">Delete Artist</button>
+                    </p>`
                 );
             }
         }
@@ -158,12 +150,12 @@ class DOMManager {
 }
 
 
-$('#create-new-artist').click(() => {
-    DOMManager.createArtist($('#new-artist-name').val());
-    $('#new-artist-name').val('');
+$('#create-new-festival').click(() => {
+    DOMManager.createFestival($('#new-festival-name').val());
+    $('#new-festival-name').val('');
 });
 
-DOMManager.getAllArtists();
+DOMManager.getAllFestivals();
 
 
 
