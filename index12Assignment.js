@@ -1,8 +1,9 @@
 //Zeke 2023
 
 class Festival { //creating Festival class
-    constructor(name) {
+    constructor(name, date) {
         this.name = name;
+        this.date = date;
         this.artists = [];
     }
 
@@ -20,18 +21,17 @@ class Artist { //creating Artist class
 
 //creating http requests send service through MockApi
 class FestivalService {
-    static url ='https://64f3f3a8932537f4051a0ad0.mockapi.io/Festivals_API/Festivals'; //using static methods to call on the class itself directly as it belongs to the class rather than an instance of said class
+    static url ='https://64f3f3a8932537f4051a0ad0.mockapi.io/Festivals_API/festivals'; //using static methods to call on the class itself directly as it belongs to the class rather than an instance of said class
 
+    static createFestival(festival) {
+        return $.post(this.url, festival); //establishing POST aka Create in CRUD
+    }
     static getAllFestivals() {
         return $.get(this.url); //establishing GET aka Read in CRUD
     }
 
     static getFestival(id) {
         return $.get(this.url + `/${id}`);
-    }
-
-    static createFestival(festival) {
-        return $.post(this.url, festival); //establishing POST aka Create in CRUD
     }
 
     //now ensuring that an id is assigned automatically by the API
@@ -63,14 +63,15 @@ class DOMManager {
     }
 
     //creating new artist with updated data received from theS requests
-    static createFestival(name) {
-        FestivalService.createFestival(new Festival(name))
+    static createFestival(name, date) {
+        FestivalService.createFestival(new Festival(name, date))
         .then(() => {
             return FestivalService.getAllFestivals();
         })
         .then((festivals) => this.render(festivals));
     }
-
+//Not really sure why my festivals and artists are not deleting. Will need to reach back out to a mentor.
+//requests are meant to be sent to delete each rendition of festival and return updated festival array, and then render all festivals with updated data
     static deleteFestival(id) {
         FestivalService.deleteFestival(id)
             .then(() => {
@@ -82,7 +83,10 @@ class DOMManager {
     static addArtist(id) {
         for (let festival of this.festivals) {
             if (festival._id == id) {
+                console.log(this.festivals);
+                console.log(this.festival);
                 festival.artists.push(new Artist($(`#${festival._id}-artist-name`).val(), $(`#${festival._id}-artist-duration`).val()));
+                console.log(festival.artists);
                 FestivalService.updateFestival(festival)
                 .then(() => {
                     return FestivalService.getAllFestivals();
@@ -107,16 +111,17 @@ class DOMManager {
                 }
             }
         }
-    }
+}
 
     static render(festivals) {
         this.festivals = festivals;
-        $('#app').empty();
-        for (let festival of festivals) {
-            $('#app').prepend(
+        $('#app').empty(); //using empty here so it can clear every time the app is rendered
+        for (let festival of festivals) { //for loop here to render each and every festival
+            console.log(festival); //troubleshooting purposes
+            $('#app').prepend( //preprend so each festival is placed on top
                `<div id="${festival._id}" class="card">
                     <div class="card-header">
-                        <h2>${festival.name}</h2>
+                        <h2>${festival.name} on ${festival.date}</h2>
                         <button class="btn btn-danger" onclick="DOMManager.deleteFestival('${festival._id}')">Delete</button>
                     </div>
                     <div class="card-body">
@@ -132,9 +137,12 @@ class DOMManager {
                             <button id="${festival._id}-new-artist" onclick="DOMManager.addArtist('${festival._id}')" class="btn btn-primary form-control">Add</button>
                         </div>
                     </div>
-                </div><br>` 
-            );
+                </div><br>` //end to template literal
+            ); //end to preprend
+
+            //nested for loop to render the data from festival
             for (let artist of festival.artists) {
+                console.log(festival);
                 $(`#${festival._id}`).find('.card-body').append(
                     `<p>
                         <span id="name-${artist._id}"><strong>Name: </strong> ${artist.name}</span>
@@ -149,8 +157,9 @@ class DOMManager {
 
 
 $('#create-new-festival').click(() => {
-    DOMManager.createFestival($('#new-festival-name').val());
+    DOMManager.createFestival($('#new-festival-name').val(), $('#new-festival-date').val());
     $('#new-festival-name').val('');
+    $('#new-festival-date').val('');
 });
 
 DOMManager.getAllFestivals();
